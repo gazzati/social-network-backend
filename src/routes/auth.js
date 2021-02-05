@@ -100,7 +100,7 @@ router.post('/login', async (req, res) => {
 
     //Create a token and set cookie
     const token = createToken(user._id)
-    res.cookie('authToken', token, { httpOnly: true, maxAge: maxAge * 1000, sameSite: 'none' })
+    res.cookie('authToken', token, { httpOnly: true, maxAge: maxAge * 1000, sameSite: 'none', secure: true })
 
     res.status(200).json({
         resultCode: 0,

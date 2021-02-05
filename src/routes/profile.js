@@ -78,7 +78,7 @@ router.put('/photo', verify, upload.single('image'), async (req, res) => {
         resultCode: 0,
         message: 'is Upload',
         data: {
-            photo: `http://localhost:4000/uploads/${filename}`
+            photo: `https://gazzati-sc-backend.herokuapp.com/uploads/${filename}`
         }
     })
 })

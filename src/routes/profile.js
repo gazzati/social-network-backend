@@ -43,14 +43,12 @@ function removeOld(id) {
 router.get('/:id', verify, async (req, res) => {
     const { id } = req.params
 
-    console.log(id)
     //Checking if the id exists
     const user = await User.findOne({ _id: id })
     if (!user) return res.status(400).send({ resultCode: 1, message: 'User is not found' })
 
     const posts = await Post.find({ userId: id })
 
-    console.log(user)
     res.send({
         resultCode: 0,
         message: 'OK',

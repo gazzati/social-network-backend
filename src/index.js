@@ -4,6 +4,7 @@ const cors = require('cors')
 const app = express()
 const dotenv = require('dotenv')
 const cookieParser = require('cookie-parser')
+const PORT = process.env.PORT || 4000
 
 //Import Routes
 const authRoute = require('./routes/auth')
@@ -44,4 +45,4 @@ app.use('/api/profile', profileRoute)
 app.use('/api/users', usersRoute)
 app.use('/api/chats', chatsRoute)
 
-app.listen(4000, () => console.log('Server Up and running'))
+app.listen(PORT, () => console.log('Server Up and running'))

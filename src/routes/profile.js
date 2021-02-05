@@ -71,7 +71,7 @@ router.put('/photo', verify, upload.single('image'), async (req, res) => {
         .toFile('./src/uploads/' + filename)
 
     const user = await User.findByIdAndUpdate({ _id: id }, {
-        photo: `http://localhost:4000/uploads/${filename}`
+        photo: `https://gazzati-sc-backend.herokuapp.com/uploads/${filename}`
     })
 
     res.status(200).json({

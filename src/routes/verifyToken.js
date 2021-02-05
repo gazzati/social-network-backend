@@ -5,7 +5,7 @@ module.exports = function (req, res, next) {
     if (!token) return res.json({ resultCode: 1, message: 'Access Denied' })
 
     try {
-        req.user = jwt.verify(token, process.env.TOKEN_SECRET)
+        req.user = jwt.verify(token, 'riopklmbascadc')
         next()
     } catch (error) {
         res.status(400).json({ resultCode: 1, message: 'Invalid Token' })

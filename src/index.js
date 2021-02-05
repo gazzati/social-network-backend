@@ -15,7 +15,7 @@ dotenv.config({ path: './src/.env' })
 
 //Connect to DB
 mongoose.connect(
-    process.env.DB_CONNECT,
+    "mongodb+srv://gazzaevtimur:timur99@cluster0.xbdsh.mongodb.net/social-network?retryWrites=true&w=majority",
     { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false }, () =>
         console.log('Connected to db!')
 )

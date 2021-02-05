@@ -13,6 +13,10 @@ const chatsRoute = require('./routes/chats')
 
 dotenv.config({ path: './src/.env' })
 
+app.get("/", (req, res) => {
+    res.send("aloha")
+})
+
 //Connect to DB
 mongoose.connect(
     "mongodb+srv://gazzaevtimur:timur99@cluster0.xbdsh.mongodb.net/social-network?retryWrites=true&w=majority",

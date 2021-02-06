@@ -67,16 +67,19 @@ router.post('/registration', async (req, res) => {
 
         //Create a token and set cookie
         const token = createToken(newUser._id)
-        res.cookie('authToken', token, { httpOnly: true, maxAge: maxAge * 1000 })
+        //res.cookie('authToken', token, { httpOnly: true, maxAge: maxAge * 1000 })
 
         res.status(200).json({
             resultCode: 0,
             message: 'Registration success!',
             data: {
-                id: user._id,
-                name: user.info.name,
-                surname: user.info.surname,
-                photo: user.photo
+                userData: {
+                    id: user._id,
+                    name: user.info.name,
+                    surname: user.info.surname,
+                    photo: user.photo
+                },
+                authToken: token
             }
         })
         res.send({ user: user._id, resultCode: 0 })
@@ -100,16 +103,19 @@ router.post('/login', async (req, res) => {
 
     //Create a token and set cookie
     const token = createToken(user._id)
-    res.cookie('authToken', token, { httpOnly: true, maxAge: maxAge * 1000, sameSite: 'none', secure: true })
+    //res.cookie('authToken', token, { httpOnly: true, maxAge: maxAge * 1000, sameSite: 'none', secure: true })
 
     res.status(200).json({
         resultCode: 0,
         message: 'Logged in!',
         data: {
-            id: user._id,
-            name: user.info.name,
-            surname: user.info.surname,
-            photo: user.photo
+            userData: {
+                id: user._id,
+                name: user.info.name,
+                surname: user.info.surname,
+                photo: user.photo
+            },
+            authToken: token
         }
     })
 })

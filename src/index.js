@@ -1,10 +1,13 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
-const app = express()
-const dotenv = require('dotenv')
 const cookieParser = require('cookie-parser')
+const fileUpload = require('express-fileupload')
+const dotenv = require('dotenv')
+const app = express()
+
 const PORT = process.env.PORT || 4000
+const DB_CONNECT = 'mongodb+srv://gazzaevtimur:timur99@cluster0.xbdsh.mongodb.net/social-network?retryWrites=true&w=majority'
 
 //Import Routes
 const authRoute = require('./routes/auth')
@@ -20,16 +23,16 @@ app.get("/", (req, res) => {
 
 //Connect to DB
 mongoose.connect(
-    "mongodb+srv://gazzaevtimur:timur99@cluster0.xbdsh.mongodb.net/social-network?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false }, () =>
-        console.log('Connected to db!')
+    DB_CONNECT,
+    { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false },
+    () => console.log('Connected to db!')
 )
 
 //Middleware
 app.use(express.json())
-app.use('/uploads', express.static('src/uploads'))
 app.use(cookieParser())
 app.use(cors({ origin: true, credentials: true }))
+app.use(fileUpload({ useTempFiles: true }))
 
 //Route Middlewares
 app.use('/api/auth', authRoute)

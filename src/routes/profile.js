@@ -2,42 +2,14 @@ const router = require('express').Router()
 const User = require('../model/Profile')
 const Post = require('../model/Post')
 const verify = require('./verifyToken')
-
-const multer = require('multer')
-const sharp = require('sharp')
-const fs = require('fs')
-const path = require('path')
 const getDate = require('../helper/getDate')
 
-const storage = multer.memoryStorage()
-
-const fileFilter = (req, file, cb) => {
-    //reject a file
-    if (file.mimetype.startsWith('image')) {
-        cb(null, true)
-    } else {
-        cb('Please upload only images.', false)
-    }
-}
-
-const upload = multer({
-    storage,
-    limits: {
-        fileSize: 1024 * 1024 * 5     //5 Mb
-    },
-    fileFilter
+const cloudinary = require('cloudinary').v2
+cloudinary.config({
+    cloud_name: 'sn-images',
+    api_key: '931534793846843',
+    api_secret: 'VPGMr0pQdVre8-KE2LNrG3ojBZ8'
 })
-
-function removeOld(id) {
-    const files = fs.readdirSync('./src/uploads/')
-
-    for (let i = 0; i < files.length; i++) {
-        const filename = path.join('./src/uploads/', files[i])
-        if (filename.includes(id)) {
-            fs.unlinkSync(filename)
-        }
-    }
-}
 
 //PROFILE
 router.get('/:id', verify, async (req, res) => {
@@ -52,40 +24,48 @@ router.get('/:id', verify, async (req, res) => {
     res.send({
         resultCode: 0,
         message: 'OK',
-        data: {...user._doc, posts}
+        data: { ...user._doc, posts }
     })
 })
 
 //UPLOAD PHOTO
-router.put('/photo', verify, upload.single('image'), async (req, res) => {
-
+router.put('/photo', verify, async (req, res) => {
     const id = req.user._id
-    const filename = `${id}-${new Date().getTime()}.${req.file.mimetype.slice(6)}`
+    const file = req.files.image
 
-    removeOld(id)
+    const user = await User.findById(id)
 
-    await sharp(req.file.buffer)
-        .resize(100, 100)
-        .toFormat('jpeg')
-        .jpeg({ quality: 90 })
-        .toFile('./src/uploads/' + filename)
+    if (user.photo.id) {
+        await cloudinary.uploader.destroy(user.photo.id,
+            function (error, result) {
+                console.log('Removing result', result)
+            }
+        )
+    }
 
-    const user = await User.findByIdAndUpdate({ _id: id }, {
-        photo: `https://gazzati-sc-backend.herokuapp.com/uploads/${filename}`
-    })
+    await cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
+        if (err) res.json({ resultCode: 1, message: err })
 
-    res.status(200).json({
-        resultCode: 0,
-        message: 'is Upload',
-        data: {
-            photo: `https://gazzati-sc-backend.herokuapp.com/uploads/${filename}`
-        }
+        await User.findByIdAndUpdate({ _id: id }, {
+            photo: {
+                url: result.url,
+                id: result.public_id
+            }
+        })
+
+        res.status(200).json({
+            resultCode: 0,
+            message: 'is Upload',
+            data: {
+                photo: result.url
+            }
+        })
     })
 })
 
+
 //UPDATE INFO
 router.put('/', verify, async (req, res) => {
-
     const id = req.user._id
 
     const user = await User.findByIdAndUpdate({ _id: id })
@@ -105,7 +85,7 @@ router.put('/status', verify, async (req, res) => {
     const id = req.user._id
     const status = req.body.status
 
-    if (!status) res.status(400).json({
+    if (!status) res.json({
         resultCode: 1,
         message: 'Status shouldn`t be emty'
     })
@@ -179,8 +159,8 @@ router.delete('/post:postId', verify, async (req, res) => {
 
     const postId = req.params.postId
 
-    await Post.deleteOne({ _id: postId },(err) => {
-        if(err) res.status(400).send({ resultCode: 1, message: err })
+    await Post.deleteOne({ _id: postId }, (err) => {
+        if (err) res.status(400).send({ resultCode: 1, message: err })
 
         res.status(200).json({
             resultCode: 0,

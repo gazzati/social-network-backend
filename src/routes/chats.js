@@ -13,7 +13,7 @@ async function getAllChats(id, res, newChatId) {
             const companionId = chat.participants.filter(userId => userId.toString() !== id)[0]
             const companion = await User.findById(companionId)
             chat.title = `${companion.info.name} ${companion.info.surname}`
-            chat.photo = companion.photo
+            chat.photo = companion.photo.url
         }
     }
 

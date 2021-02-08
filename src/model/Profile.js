@@ -64,7 +64,12 @@ const userSchema = new mongoose.Schema({
         type: String
     },
     photo: {
-        type: String
+        url: {
+            type: String
+        },
+        id: {
+            type: String
+        }
     },
     following: [
         {

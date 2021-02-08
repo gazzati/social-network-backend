@@ -25,7 +25,7 @@ router.get('/me', verify, async (req, res) => {
             id: user._id,
             name: user.info.name,
             surname: user.info.surname,
-            photo: user.photo
+            photo: user.photo.url
         }
     })
 })

@@ -67,6 +67,9 @@ const userSchema = new mongoose.Schema({
         url: {
             type: String
         },
+        urlOriginal: {
+            type: String
+        },
         id: {
             type: String
         }

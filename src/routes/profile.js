@@ -4,6 +4,7 @@ const Post = require('../model/Post')
 const verify = require('./verifyToken')
 const getDate = require('../helper/getDate')
 
+const cloudinaryUrl = 'https://res.cloudinary.com/sn-images/image/upload/'
 const cloudinary = require('cloudinary').v2
 cloudinary.config({
     cloud_name: 'sn-images',
@@ -17,7 +18,7 @@ router.get('/:id', verify, async (req, res) => {
 
     //Checking if the id exists
     const user = await User.findOne({ _id: id })
-    if (!user) return res.status(400).send({ resultCode: 1, message: 'User is not found' })
+    if (!user) return res.send({ resultCode: 1, message: 'User is not found' })
 
     const posts = await Post.find({ userId: id })
 
@@ -46,9 +47,12 @@ router.put('/photo', verify, async (req, res) => {
     await cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
         if (err) res.json({ resultCode: 1, message: err })
 
+        const formatImg = `${cloudinaryUrl}w_100,h_100,c_fill/v1612876220/${result.public_id}.${result.format}`
+
         await User.findByIdAndUpdate({ _id: id }, {
             photo: {
-                url: result.url,
+                url: formatImg,
+                urlOriginal: result.url,
                 id: result.public_id
             }
         })
@@ -57,7 +61,7 @@ router.put('/photo', verify, async (req, res) => {
             resultCode: 0,
             message: 'is Upload',
             data: {
-                photo: result.url
+                photo: formatImg
             }
         })
     })
@@ -109,7 +113,7 @@ router.post('/post', verify, async (req, res) => {
     const id = req.user._id
     const postMessage = req.body.postMessage
 
-    if (!postMessage) res.status(400).json({
+    if (!postMessage) res.json({
         resultCode: 1,
         message: 'Post message shouldn`t be empty'
     })
@@ -132,7 +136,7 @@ router.post('/post', verify, async (req, res) => {
             }
         })
     } catch (err) {
-        res.status(400).send({ resultCode: 1, message: err })
+        res.send({ resultCode: 1, message: err })
     }
 })
 
@@ -160,7 +164,7 @@ router.delete('/post:postId', verify, async (req, res) => {
     const postId = req.params.postId
 
     await Post.deleteOne({ _id: postId }, (err) => {
-        if (err) res.status(400).send({ resultCode: 1, message: err })
+        if (err) res.send({ resultCode: 1, message: err })
 
         res.status(200).json({
             resultCode: 0,

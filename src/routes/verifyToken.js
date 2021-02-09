@@ -10,6 +10,6 @@ module.exports = function (req, res, next) {
         req.user = jwt.verify(token, TOKEN_SECRET)
         next()
     } catch (error) {
-        res.status(400).json({ resultCode: 1, message: 'Invalid Token' })
+        res.json({ resultCode: 1, message: 'Invalid Token' })
     }
 }

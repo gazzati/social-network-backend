@@ -6,7 +6,7 @@ const getDate = require('../helper/getDate')
 
 async function getAllChats(id, res, newChatId) {
     const chats = await Chat.find({ participants: id })
-    if (!chats) return res.status(400).send({ resultCode: 1, message: 'Chats not found' })
+    if (!chats) return res.send({ resultCode: 1, message: 'Chats not found' })
 
     for (const chat of chats) {
         if (chat.participants.length === 2) {

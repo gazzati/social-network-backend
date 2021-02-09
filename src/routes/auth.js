@@ -16,7 +16,7 @@ router.get('/me', verify, async (req, res) => {
     const userId = req.user._id
 
     const user = await User.findOne({ _id: userId })
-    if (!user) return res.status(400).send({ resultCode: 1, message: 'User is not found' })
+    if (!user) return res.send({ resultCode: 1, message: 'User is not found' })
 
     res.status(200).json({
         resultCode: 0,
@@ -35,11 +35,11 @@ router.get('/me', verify, async (req, res) => {
 router.post('/registration', async (req, res) => {
     //LETS VALIDATE THE DATA BEFORE WE A USER
     const { error } = registerValidation(req.body)
-    if (error) return res.status(400).json(error.details[0].message)
+    if (error) return res.json(error.details[0].message)
 
     //Checking if the user is already in the database
     const emailExist = await User.findOne({ email: req.body.email })
-    if (emailExist) return res.status(400).json('Email already exist')
+    if (emailExist) return res.json('Email already exist')
 
     //Hash password
     const salt = await bcrypt.genSalt(10)
@@ -63,7 +63,7 @@ router.post('/registration', async (req, res) => {
         const savedUser = await user.save()
 
         const newUser = await User.findOne({ email: user.email })
-        if (!newUser) return res.status(400).json({ resultCode: 1, message: 'Email is not found' })
+        if (!newUser) return res.json({ resultCode: 1, message: 'Email is not found' })
 
         //Create a token and set cookie
         const token = createToken(newUser._id)
@@ -77,29 +77,29 @@ router.post('/registration', async (req, res) => {
                     id: user._id,
                     name: user.info.name,
                     surname: user.info.surname,
-                    photo: user.photo
+                    photo: user.photo.url
                 },
                 authToken: token
             }
         })
         res.send({ user: user._id, resultCode: 0 })
     } catch (err) {
-        res.status(400).send({ resultCode: 1, message: err })
+        res.send({ resultCode: 1, message: err })
     }
 })
 
 //LOGIN
 router.post('/login', async (req, res) => {
     const { error } = loginValidation(req.body)
-    if (error) return res.status(400).json({ resultCode: 1, message: error.details[0].message })
+    if (error) return res.json({ resultCode: 1, message: error.details[0].message })
 
     //Checking if the email exists
     const user = await User.findOne({ email: req.body.email })
-    if (!user) return res.status(400).json({ resultCode: 1, message: 'Email is not found' })
+    if (!user) return res.json({ resultCode: 1, message: 'Email is not found' })
 
     //Password is correct
     const validPass = await bcrypt.compare(req.body.password, user.password)
-    if (!validPass) return res.status(400).json({ resultCode: 1, message: 'Invalid password' })
+    if (!validPass) return res.json({ resultCode: 1, message: 'Invalid password' })
 
     //Create a token and set cookie
     const token = createToken(user._id)
@@ -113,7 +113,7 @@ router.post('/login', async (req, res) => {
                 id: user._id,
                 name: user.info.name,
                 surname: user.info.surname,
-                photo: user.photo
+                photo: user.photo.url
             },
             authToken: token
         }

@@ -13,7 +13,7 @@ router.get('/',async (req, res) => {
     res.send({
         resultCode: 0,
         message: 'OK',
-        data: users
+        data: users.reverse()
     })
 })
 

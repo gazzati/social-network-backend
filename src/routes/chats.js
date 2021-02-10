@@ -19,7 +19,7 @@ async function getAllChats(id, res, newChatId) {
 
     const sortedByLastMessage = [...chats].sort((a, b) => {
         if (a.messages.length && b.messages.length) {
-            return new Date(a.messages[a.messages.length - 1].date) < new Date (b.messages[b.messages.length - 1].date)
+            return new Date (b.messages[b.messages.length - 1].date) - new Date(a.messages[a.messages.length - 1].date)
         }
         return true
     })

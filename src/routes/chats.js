@@ -36,7 +36,7 @@ router.get('/:chatId', verify, async (req, res) => {
     const chats = await getAllChats(id, res)
 
     const messages = chatId === 'all'
-        ? chats[0].messages
+        ? chats[0] && chats[0].messages
         : chats.filter(chat => chat._id.toString() === chatId)[0].messages
 
     res.status(200).json({

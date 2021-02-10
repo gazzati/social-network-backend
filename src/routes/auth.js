@@ -52,7 +52,15 @@ router.post('/registration', async (req, res) => {
         info: {
             name: req.body.name,
             surname: req.body.surname,
-            status: ''
+            status: '',
+            contacts: {
+                facebook: '',
+                github: '',
+                instagram: '',
+                twitter: '',
+                vk: '',
+                youtube: ''
+            }
         },
         posts: [],
         following: [],

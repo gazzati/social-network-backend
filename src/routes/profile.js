@@ -76,10 +76,12 @@ router.put('/', verify, async (req, res) => {
     user.info = req.body
     user.save()
 
+    const posts = await Post.find({ userId: id })
+
     res.status(200).json({
         resultCode: 0,
         message: 'Profile info was changed',
-        data: user
+        data: { ...user, posts }
     })
 })
 

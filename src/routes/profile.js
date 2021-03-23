@@ -67,21 +67,22 @@ router.put('/photo', verify, async (req, res) => {
     })
 })
 
-
 //UPDATE INFO
 router.put('/', verify, async (req, res) => {
     const id = req.user._id
 
-    const user = await User.findByIdAndUpdate({ _id: id })
+    const user = await User.findById(id)
     user.info = req.body
-    user.save()
+    user.save(async (err, user) => {
+        if(err) return res.json({ resultCode: 1, message: err})
 
-    const posts = await Post.find({ userId: id })
+        const posts = await Post.find({ userId: id })
 
-    res.status(200).json({
-        resultCode: 0,
-        message: 'Profile info was changed',
-        data: { ...user, posts }
+        res.status(200).json({
+            resultCode: 0,
+            message: 'Profile info was changed',
+            data: { ...user._doc, posts }
+        })
     })
 })
 

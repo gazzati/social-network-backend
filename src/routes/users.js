@@ -3,18 +3,30 @@ const User = require('../model/Profile')
 const verify = require('./verifyToken')
 
 //USERS
-router.get('/',async (req, res) => {
-    const term = req.query.term
+router.get('/', async (req, res) => {
+    const {page, limit, term} = req.query
+    const searchFilter = {'info.name': {$regex: term ? `${term}` : '.*', $options: 'i'}}
 
-    const users = await User.find({
-        'info.name': { $regex: term ? `${term}` : '.*', $options: 'i' }
-    })
+    const allUsers = await User.find(searchFilter)
 
-    res.send({
-        resultCode: 0,
-        message: 'OK',
-        data: users.reverse()
-    })
+    await User
+        .find(searchFilter)
+        .sort({date: -1})
+        .limit(+limit)
+        .skip((+page - 1) * +limit)
+        .exec((err, doc) => {
+            if(!doc.length || err) return res.send({resultCode: 1, message: 'No find users'})
+
+            res.send({
+                resultCode: 0,
+                message: 'OK',
+                data: {
+                    total: allUsers.length,
+                    users: doc
+                }
+
+            })
+        })
 })
 
 //FOLLOW
@@ -30,12 +42,13 @@ router.post('/follow:id', verify, async (req, res) => {
     currentUser.following.push(followId)
     currentUser.save()
 
-    const users = await User.find()
-
     res.send({
         resultCode: 0,
         message: 'Follow success',
-        data: users
+        data: {
+            myId: id,
+            userId: followId
+        }
     })
 })
 
@@ -52,12 +65,13 @@ router.delete('/unfollow:id', verify, async (req, res) => {
     currentUser.following = currentUser.following.filter(followerId => followerId.toString() !== unfollowId)
     currentUser.save()
 
-    const users = await User.find()
-
     res.send({
         resultCode: 0,
         message: 'Unfollow success',
-        data: users
+        data: {
+            myId: id,
+            userId: unfollowId
+        }
     })
 })
 

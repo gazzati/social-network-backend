@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -76,14 +76,14 @@ const userSchema = new mongoose.Schema({
     },
     following: [
         {
-            type: mongoose.Schema.ObjectId
+            type: mongoose.Schema.Types.ObjectId
         }
     ],
     followers: [
         {
-            type: mongoose.Schema.ObjectId
+            type: mongoose.Schema.Types.ObjectId
         }
     ]
 })
 
-module.exports = mongoose.model('User', userSchema)
+export default mongoose.model('User', userSchema)

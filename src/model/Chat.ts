@@ -1,9 +1,9 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const chatSchema = new mongoose.Schema({
     participants: [
         {
-            type: mongoose.Schema.ObjectId
+            type: mongoose.Schema.Types.ObjectId
         }
     ],
     title: {
@@ -23,7 +23,7 @@ const chatSchema = new mongoose.Schema({
                 required: true
             },
             senderId: {
-                type: mongoose.Schema.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
                 required: true
             },
             date: {
@@ -34,4 +34,4 @@ const chatSchema = new mongoose.Schema({
     ]
 })
 
-module.exports = mongoose.model('Chat', chatSchema)
+export default mongoose.model('Chat', chatSchema)

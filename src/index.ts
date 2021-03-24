@@ -1,24 +1,25 @@
-const express = require('express')
-const mongoose = require('mongoose')
-const cors = require('cors')
-const cookieParser = require('cookie-parser')
-const fileUpload = require('express-fileupload')
-const dotenv = require('dotenv')
-const app = express()
+import express from 'express'
+import mongoose from 'mongoose'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
+import fileUpload from 'express-fileupload'
+import dotenv from 'dotenv'
+
+//Import Routes
+import authRoute from './routes/auth'
+import profileRoute from './routes/profile'
+import usersRoute from './routes/users'
+import chatsRoute from './routes/chats'
 
 const PORT = process.env.PORT || 4000
 const DB_CONNECT = 'mongodb+srv://gazzaevtimur:timur99@cluster0.xbdsh.mongodb.net/social-network?retryWrites=true&w=majority'
 
-//Import Routes
-const authRoute = require('./routes/auth')
-const profileRoute = require('./routes/profile')
-const usersRoute = require('./routes/users')
-const chatsRoute = require('./routes/chats')
-
 dotenv.config({ path: './src/.env' })
 
-app.get("/", (req, res) => {
-    res.send("aloha")
+const app = express()
+
+app.get("/", (req: express.Request, res: express.Response) => {
+    res.send("aloha bro")
 })
 
 //Connect to DB

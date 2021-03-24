@@ -1,19 +1,23 @@
-const router = require('express').Router()
-const User = require('../model/Profile')
-const jwt = require('jsonwebtoken')
-const bcrypt = require('bcryptjs')
-const { registerValidation, loginValidation } = require('../middleware/validation')
-const verify = require('./verifyToken')
+import express, { Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
+
+import User from '../model/Profile'
+import { registerValidation, loginValidation } from '../middleware/validation'
+import { verify } from '../middleware/verifyToken'
+
+
+const router = express.Router()
 
 const maxAge = 24 * 60 * 60
 
-const createToken = (id) => {
-    return jwt.sign({ _id: id }, process.env.TOKEN_SECRET, { expiresIn: maxAge })
+const createToken = (id: string) => {
+    return jwt.sign({ _id: id }, (process.env.TOKEN_SECRET || new Date()).toString(), { expiresIn: maxAge })
 }
 
 //ME
-router.get('/me', verify, async (req, res) => {
-    const userId = req.user._id
+router.get('/me', verify, async (req: Request, res: Response) => {
+    const userId = req.userId
 
     const user = await User.findOne({ _id: userId })
     if (!user) return res.send({ resultCode: 1, message: 'User is not found' })
@@ -32,7 +36,7 @@ router.get('/me', verify, async (req, res) => {
 
 
 //REGISTRATION
-router.post('/registration', async (req, res) => {
+router.post('/registration', async (req: Request, res: Response) => {
     //LETS VALIDATE THE DATA BEFORE WE A USER
     const { error } = registerValidation(req.body)
     if (error) return res.json(error.details[0].message)
@@ -68,7 +72,7 @@ router.post('/registration', async (req, res) => {
     })
 
     try {
-        const savedUser = await user.save()
+        await user.save()
 
         const newUser = await User.findOne({ email: user.email })
         if (!newUser) return res.json({ resultCode: 1, message: 'Email is not found' })
@@ -97,7 +101,7 @@ router.post('/registration', async (req, res) => {
 })
 
 //LOGIN
-router.post('/login', async (req, res) => {
+router.post('/login', async (req: Request, res: Response) => {
     const { error } = loginValidation(req.body)
     if (error) return res.json({ resultCode: 1, message: error.details[0].message })
 
@@ -129,9 +133,9 @@ router.post('/login', async (req, res) => {
 })
 
 //LOGOUT
-router.delete('/logout', verify, async (req, res) => {
+router.delete('/logout', verify, async (req: Request, res: Response) => {
     res.cookie('authToken', '')
     res.status(200).json({ resultCode: 0, message: 'Succcess logout' })
 })
 
-module.exports = router
+export default router

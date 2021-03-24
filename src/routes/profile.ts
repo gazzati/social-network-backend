@@ -1,8 +1,10 @@
-const router = require('express').Router()
-const User = require('../model/Profile')
-const Post = require('../model/Post')
-const verify = require('./verifyToken')
-const getDate = require('../helper/getDate')
+import express, { Request, Response} from 'express'
+import User from '../model/Profile'
+import Post from '../model/Post'
+import {verify} from '../middleware/verifyToken'
+import getDate from '../helper/getDate'
+
+const router = express.Router()
 
 const cloudinaryUrl = 'https://res.cloudinary.com/sn-images/image/upload/'
 const cloudinary = require('cloudinary').v2
@@ -13,7 +15,7 @@ cloudinary.config({
 })
 
 //PROFILE
-router.get('/:id', verify, async (req, res) => {
+router.get('/:id', verify, async (req: Request, res: Response) => {
     const { id } = req.params
 
     //Checking if the id exists
@@ -30,21 +32,21 @@ router.get('/:id', verify, async (req, res) => {
 })
 
 //UPLOAD PHOTO
-router.put('/photo', verify, async (req, res) => {
-    const id = req.user._id
-    const file = req.files.image
+router.put('/photo', verify, async (req: Request, res: Response) => {
+    const id = req.userId
+    const file = req.files?.image
 
     const user = await User.findById(id)
 
     if (user.photo.id) {
         await cloudinary.uploader.destroy(user.photo.id,
-            function (error, result) {
+            (error: any, result: any) => {
                 console.log('Removing result', result)
             }
         )
     }
 
-    await cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
+    await cloudinary.uploader.upload(file, async (err: any, result: any) => {
         if (err) res.json({ resultCode: 1, message: err })
 
         const formatImg = `${cloudinaryUrl}w_100,h_100,c_fill/v1612876220/${result.public_id}.${result.format}`
@@ -68,12 +70,12 @@ router.put('/photo', verify, async (req, res) => {
 })
 
 //UPDATE INFO
-router.put('/', verify, async (req, res) => {
-    const id = req.user._id
+router.put('/', verify, async (req: Request, res: Response) => {
+    const id = req.userId
 
     const user = await User.findById(id)
     user.info = req.body
-    user.save(async (err, user) => {
+    user.save(async (err: any, user: any) => {
         if(err) return res.json({ resultCode: 1, message: err})
 
         const posts = await Post.find({ userId: id })
@@ -87,9 +89,8 @@ router.put('/', verify, async (req, res) => {
 })
 
 //CHANGE STATUS
-router.put('/status', verify, async (req, res) => {
-
-    const id = req.user._id
+router.put('/status', verify, async (req: Request, res: Response) => {
+    const id = req.userId
     const status = req.body.status
 
     if (!status) res.json({
@@ -97,23 +98,24 @@ router.put('/status', verify, async (req, res) => {
         message: 'Status shouldn`t be emty'
     })
 
-    const user = await User.findByIdAndUpdate({ _id: id })
+    const user = await User.findById(id)
     user.status = status
-    user.save()
+    user.save(async (err: any, user: any) => {
+        if(err) return res.json({ resultCode: 1, message: err})
 
-    res.status(200).json({
-        resultCode: 0,
-        message: 'Status was changed',
-        data: {
-            status: user.status
-        }
+        res.status(200).json({
+            resultCode: 0,
+            message: 'Status was changed',
+            data: {
+                status: user.status
+            }
+        })
     })
 })
 
 //ADD POST
-router.post('/post', verify, async (req, res) => {
-
-    const id = req.user._id
+router.post('/post', verify, async (req: Request, res: Response) => {
+    const id = req.userId
     const postMessage = req.body.postMessage
 
     if (!postMessage) res.json({
@@ -144,29 +146,32 @@ router.post('/post', verify, async (req, res) => {
 })
 
 //ADD LIKE
-router.put('/like', verify, async (req, res) => {
-
-    const id = req.user._id
+router.put('/like', verify, async (req: Request, res: Response) => {
+    const id = req.userId
     const postId = req.body.postId
 
-    await Post.findByIdAndUpdate(postId, { $inc: { likesCount: 1 } })
-    const freshPosts = await Post.find({ userId: id })
+    const post = await Post.findById(postId)
+    post.likesCount++
+    post.save(async (err: any) => {
+        if(err) return res.json({ resultCode: 1, message: err})
 
-    res.status(200).json({
-        resultCode: 0,
-        message: 'Is liked',
-        data: {
-            posts: freshPosts
-        }
+        const freshPosts = await Post.find({ userId: id })
+
+        res.status(200).json({
+            resultCode: 0,
+            message: 'Is liked',
+            data: {
+                posts: freshPosts
+            }
+        })
     })
 })
 
 //DELETE POST
-router.delete('/post:postId', verify, async (req, res) => {
-
+router.delete('/post:postId', verify, async (req: Request, res: Response) => {
     const postId = req.params.postId
 
-    await Post.deleteOne({ _id: postId }, (err) => {
+    await Post.deleteOne({ _id: postId }, {}, (err: any) => {
         if (err) res.send({ resultCode: 1, message: err })
 
         res.status(200).json({
@@ -179,4 +184,4 @@ router.delete('/post:postId', verify, async (req, res) => {
     })
 })
 
-module.exports = router
+export default router

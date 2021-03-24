@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const postSchema = new mongoose.Schema({
     date: {
@@ -16,9 +16,9 @@ const postSchema = new mongoose.Schema({
         default: 0
     },
     userId: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     }
 })
 
-module.exports = mongoose.model('Post', postSchema)
+export default mongoose.model('Post', postSchema)

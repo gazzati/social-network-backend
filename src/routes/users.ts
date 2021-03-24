@@ -1,10 +1,13 @@
-const router = require('express').Router()
-const User = require('../model/Profile')
-const verify = require('./verifyToken')
+import express, { Request, Response} from 'express'
+
+import User from '../model/Profile'
+import { verify } from '../middleware/verifyToken'
+
+const router = express.Router()
 
 //USERS
-router.get('/', async (req, res) => {
-    const {page, limit, term} = req.query
+router.get('/', async (req: Request, res: Response) => {
+    const {page = 1, limit = 7, term} = req.query
     const searchFilter = {'info.name': {$regex: term ? `${term}` : '.*', $options: 'i'}}
 
     const allUsers = await User.find(searchFilter)
@@ -14,7 +17,7 @@ router.get('/', async (req, res) => {
         .sort({date: -1})
         .limit(+limit)
         .skip((+page - 1) * +limit)
-        .exec((err, doc) => {
+        .exec((err: any, doc: any) => {
             if(!doc.length || err) return res.send({resultCode: 1, message: 'No find users'})
 
             res.send({
@@ -30,8 +33,8 @@ router.get('/', async (req, res) => {
 })
 
 //FOLLOW
-router.post('/follow:id', verify, async (req, res) => {
-    const id = req.user._id
+router.post('/follow:id', verify, async (req: Request, res: Response) => {
+    const id = req.userId
     const followId = req.params.id
 
     const followUser = await User.findById(followId)
@@ -53,16 +56,16 @@ router.post('/follow:id', verify, async (req, res) => {
 })
 
 //UNFOLLOW
-router.delete('/unfollow:id', verify, async (req, res) => {
-    const id = req.user._id
+router.delete('/unfollow:id', verify, async (req: Request, res: Response) => {
+    const id = req.userId
     const unfollowId = req.params.id
 
     const unfollowUser = await User.findById(unfollowId)
-    unfollowUser.followers = unfollowUser.followers.filter(followerId => followerId.toString() !== id)
+    unfollowUser.followers = unfollowUser.followers.filter((followerId: any) => followerId.toString() !== id)
     unfollowUser.save()
 
     const currentUser = await User.findById(id)
-    currentUser.following = currentUser.following.filter(followerId => followerId.toString() !== unfollowId)
+    currentUser.following = currentUser.following.filter((followerId: any) => followerId.toString() !== unfollowId)
     currentUser.save()
 
     res.send({
@@ -76,8 +79,8 @@ router.delete('/unfollow:id', verify, async (req, res) => {
 })
 
 //FOLLOWING
-router.get('/following', verify, async (req, res) => {
-    const id = req.user._id
+router.get('/following', verify, async (req: Request, res: Response) => {
+    const id = req.userId
     const currentUser = await User.findById(id)
     const following = []
 
@@ -94,8 +97,8 @@ router.get('/following', verify, async (req, res) => {
 })
 
 //FOLLOWERS
-router.get('/followers', verify, async (req, res) => {
-    const id = req.user._id
+router.get('/followers', verify, async (req: Request, res: Response) => {
+    const id = req.userId
     const currentUser = await User.findById(id)
     const followers = []
 
@@ -111,4 +114,4 @@ router.get('/followers', verify, async (req, res) => {
     })
 })
 
-module.exports = router
+export default router

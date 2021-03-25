@@ -18,7 +18,7 @@ router.get('/', async (req: Request, res: Response) => {
         .limit(+limit)
         .skip((+page - 1) * +limit)
         .exec((err: any, doc: any) => {
-            if(!doc.length || err) return res.send({resultCode: 1, message: 'No find users'})
+            if(err) return res.send({resultCode: 1, message: err})
 
             res.send({
                 resultCode: 0,

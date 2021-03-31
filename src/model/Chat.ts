@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
+import { ChatType } from 'types/chat'
 
-const chatSchema = new mongoose.Schema({
+const chatSchema = new mongoose.Schema<ChatType>({
     participants: [
         {
             type: mongoose.Schema.Types.ObjectId
@@ -12,9 +13,14 @@ const chatSchema = new mongoose.Schema({
     photo: {
         type: String
     },
-    isGroup: {
-        type: Boolean,
-        default: false
+    isUnreadFor: [
+        {
+            type: mongoose.Schema.Types.ObjectId
+        }
+    ],
+    updatedAt: {
+        type: Date,
+        default: Date.now
     },
     messages: [
         {

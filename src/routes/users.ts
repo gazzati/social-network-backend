@@ -1,7 +1,7 @@
 import express, { Request, Response} from 'express'
 
 import User from '../model/Profile'
-import { verify } from '../middleware/verifyToken'
+import { verify } from '../middleware/verify-token'
 
 const router = express.Router()
 

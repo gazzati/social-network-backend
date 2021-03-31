@@ -3,28 +3,21 @@ import mongoose from 'mongoose'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import fileUpload from 'express-fileupload'
-import dotenv from 'dotenv'
+
+import {config} from "./config"
 
 //Import Routes
 import authRoute from './routes/auth'
 import profileRoute from './routes/profile'
 import usersRoute from './routes/users'
-import chatsRoute from './routes/chats'
 
-const PORT = process.env.PORT || 4000
-const DB_CONNECT = 'mongodb+srv://gazzaevtimur:timur99@cluster0.xbdsh.mongodb.net/social-network?retryWrites=true&w=majority'
-
-dotenv.config({ path: './src/.env' })
+import './socket'
 
 const app = express()
 
-app.get("/", (req: express.Request, res: express.Response) => {
-    res.send("aloha bro")
-})
-
 //Connect to DB
 mongoose.connect(
-    DB_CONNECT,
+    config.DB_CONNECT,
     { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false },
     () => console.log('Connected to db!')
 )
@@ -39,6 +32,9 @@ app.use(fileUpload({ useTempFiles: true }))
 app.use('/api/auth', authRoute)
 app.use('/api/profile', profileRoute)
 app.use('/api/users', usersRoute)
-app.use('/api/chats', chatsRoute)
 
-app.listen(PORT, () => console.log('Server Up and running'))
+app.listen(config.PORT, () => console.log('Server Up and running on port:', config.PORT))
+
+app.get("/", (req: express.Request, res: express.Response) => {
+    res.send("aloha bro")
+})

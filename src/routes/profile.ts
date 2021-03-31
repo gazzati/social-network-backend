@@ -1,7 +1,7 @@
 import express, { Request, Response} from 'express'
 import User from '../model/Profile'
 import Post from '../model/Post'
-import {verify} from '../middleware/verifyToken'
+import {verify} from '../middleware/verify-token'
 import getDate from '../helper/getDate'
 
 const router = express.Router()

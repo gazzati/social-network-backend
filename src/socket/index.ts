@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {createServer} from "http"
 import {Server} from "socket.io"
 import jwt from "jsonwebtoken"
@@ -10,7 +9,8 @@ import Chat from "../model/Chat"
 import getDate from "../helper/getDate"
 import { ChatType } from "types/chat"
 
-const io = new Server(createServer, {
+const httpServer = createServer()
+const io = new Server(httpServer, {
     cors: {
         origin: "*"
     }

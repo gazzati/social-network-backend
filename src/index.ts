@@ -33,7 +33,7 @@ app.use('/api/auth', authRoute)
 app.use('/api/profile', profileRoute)
 app.use('/api/users', usersRoute)
 
-export const server = app.listen(config.PORT, () => console.log('Server Up and running on port:', config.PORT))
+app.listen(config.PORT, () => console.log('Server Up and running on port:', config.PORT))
 
 app.get("/", (req: express.Request, res: express.Response) => {
     res.send("aloha bro")

@@ -5,16 +5,12 @@ import {verify} from '../middleware/verify-token'
 import getDate from '../helper/getDate'
 import {UserType} from "../types/user"
 import {PostType} from "../types/post"
+import { config } from '../config'
 
 const router = express.Router()
 
-const cloudinaryUrl = 'https://res.cloudinary.com/sn-images/image/upload/'
 const cloudinary = require('cloudinary').v2
-cloudinary.config({
-    cloud_name: 'sn-images',
-    api_key: '931534793846843',
-    api_secret: 'VPGMr0pQdVre8-KE2LNrG3ojBZ8'
-})
+cloudinary.config(config.CLOUDINARY_CONFIG)
 
 //PROFILE
 router.get('/:id', verify, async (req: Request, res: Response) => {
@@ -48,7 +44,7 @@ router.put('/photo', verify, async (req: Request, res: Response) => {
     await cloudinary.uploader.upload(file, async (err: any, result: any) => {
         if (err) res.json({ resultCode: 1, message: err })
 
-        const formatImg = `${cloudinaryUrl}w_100,h_100,c_fill/v1612876220/${result.public_id}.${result.format}`
+        const formatImg = `${config.CLOUDINARY_URL}w_100,h_100,c_fill/v1612876220/${result.public_id}.${result.format}`
 
         await User.findByIdAndUpdate({ _id: id }, {
             photo: {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {createServer} from "http"
 import {Server} from "socket.io"
 import jwt from "jsonwebtoken"
@@ -8,13 +9,16 @@ import {getAllChats} from "../routes/chats"
 import Chat from "../model/Chat"
 import getDate from "../helper/getDate"
 import { ChatType } from "types/chat"
+import {server} from "../index"
 
-const httpServer = createServer()
+const io = require('socket.io')(server)
+
+/*const httpServer = createServer()
 const io = new Server(httpServer, {
     cors: {
         origin: "*"
     }
-})
+})*/
 
 export type Sessions = {
     [userId: string]: Array<string>
@@ -134,4 +138,4 @@ io.on("connection", socket => {
     })
 })
 
-httpServer.listen(config.SOCKET_PORT, () => console.log('Socket running on port:', config.SOCKET_PORT))
+// httpServer.listen(config.SOCKET_PORT, () => console.log('Socket running on port:', config.SOCKET_PORT))

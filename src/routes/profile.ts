@@ -39,11 +39,7 @@ router.put('/photo', verify, async (req: Request, res: Response) => {
     const user = await User.findById(id)
 
     if (user.photo.id) {
-        await cloudinary.uploader.destroy(user.photo.id,
-            (error: any, result: any) => {
-                console.log('Removing result', result)
-            }
-        )
+        await cloudinary.uploader.destroy(user.photo.id)
     }
 
     await cloudinary.uploader.upload(file, async (err: any, result: any) => {

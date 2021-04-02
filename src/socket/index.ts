@@ -12,7 +12,9 @@ import { ChatType } from "types/chat"
 const httpServer = createServer()
 const io = new Server(httpServer, {
     cors: {
-        origin: "*"
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["content-type"]
     }
 })
 
@@ -23,7 +25,6 @@ export type Sessions = {
 const sessions: Sessions = {}
 
 export const sendToUserSockets = async (id: string) => {
-    console.log(id, typeof id)
     if (sessions[id] != undefined) {
         const chats: ChatType[] = await getAllChats(id)
 

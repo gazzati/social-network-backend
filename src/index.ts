@@ -11,8 +11,6 @@ import authRoute from './routes/auth'
 import profileRoute from './routes/profile'
 import usersRoute from './routes/users'
 
-import './socket'
-
 const app = express()
 
 //Connect to DB

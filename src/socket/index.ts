@@ -66,7 +66,7 @@ io.on("connection", socket => {
         if(currentChat.isUnreadFor?.includes(userId)) {
             currentChat.isUnreadFor = currentChat.isUnreadFor.filter((id: any) => id.toString() !== userId)
 
-            const chat: ChatType = await Chat.findById(chatId)
+            const chat = await Chat.findById(chatId) as ChatType
             chat.isUnreadFor = chat.isUnreadFor?.filter((id: any) => id.toString() !== userId)
             await chat.save()
         }
@@ -90,12 +90,12 @@ io.on("connection", socket => {
             }
         )
 
-        const oldChat: ChatType = await Chat.findById(chatId)
+        const oldChat = await Chat.findById(chatId) as ChatType
         oldChat.isUnreadFor = oldChat.participants.filter(id => id != userId)
         await oldChat.save()
 
-        const chats: ChatType[] = await getAllChats(userId)
-        const chat: ChatType = await Chat.findById(chatId)
+        const chats = await getAllChats(userId) as ChatType[]
+        const chat = await Chat.findById(chatId) as ChatType
 
         socket.emit("chats", chats)
         socket.emit("messages", chat.messages)

@@ -2,6 +2,7 @@ import express, { Request, Response} from 'express'
 
 import User from '../model/Profile'
 import { verify } from '../middleware/verify-token'
+import {UserType} from "../types/user"
 
 const router = express.Router()
 
@@ -37,11 +38,11 @@ router.post('/follow:id', verify, async (req: Request, res: Response) => {
     const id = req.userId
     const followId = req.params.id
 
-    const followUser = await User.findById(followId)
-    followUser.followers.push(id)
-    followUser.save()
+    const followUser = await User.findById(followId) as UserType
+    id && followUser.followers.push(id)
+    await followUser.save()
 
-    const currentUser = await User.findById(id)
+    const currentUser = await User.findById(id) as UserType
     currentUser.following.push(followId)
     currentUser.save()
 
@@ -60,13 +61,13 @@ router.delete('/unfollow:id', verify, async (req: Request, res: Response) => {
     const id = req.userId
     const unfollowId = req.params.id
 
-    const unfollowUser = await User.findById(unfollowId)
+    const unfollowUser = await User.findById(unfollowId) as UserType
     unfollowUser.followers = unfollowUser.followers.filter((followerId: any) => followerId.toString() !== id)
-    unfollowUser.save()
+    await unfollowUser.save()
 
-    const currentUser = await User.findById(id)
+    const currentUser = await User.findById(id) as UserType
     currentUser.following = currentUser.following.filter((followerId: any) => followerId.toString() !== unfollowId)
-    currentUser.save()
+    await currentUser.save()
 
     res.send({
         resultCode: 0,
@@ -81,7 +82,7 @@ router.delete('/unfollow:id', verify, async (req: Request, res: Response) => {
 //FOLLOWING
 router.get('/following', verify, async (req: Request, res: Response) => {
     const id = req.userId
-    const currentUser = await User.findById(id)
+    const currentUser = await User.findById(id) as UserType
     const following = []
 
     for (const followingId of currentUser.following) {
@@ -99,7 +100,7 @@ router.get('/following', verify, async (req: Request, res: Response) => {
 //FOLLOWERS
 router.get('/followers', verify, async (req: Request, res: Response) => {
     const id = req.userId
-    const currentUser = await User.findById(id)
+    const currentUser = await User.findById(id) as UserType
     const followers = []
 
     for (const followerId of currentUser.followers) {

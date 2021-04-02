@@ -5,13 +5,14 @@ import bcrypt from 'bcryptjs'
 import User from '../model/Profile'
 import { registerValidation, loginValidation } from '../middleware/validation'
 import { verify } from '../middleware/verify-token'
+import {config} from "../config"
 
 const router = express.Router()
 
 const maxAge = 24 * 60 * 60 * 100
 
 const createToken = (id: string) => {
-    return jwt.sign({ _id: id }, (process.env.TOKEN_SECRET || new Date()).toString(), { expiresIn: maxAge })
+    return jwt.sign({ _id: id }, config.TOKEN_SECRET, { expiresIn: maxAge })
 }
 
 //ME

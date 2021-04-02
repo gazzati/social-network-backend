@@ -3,6 +3,8 @@ import User from '../model/Profile'
 import Post from '../model/Post'
 import {verify} from '../middleware/verify-token'
 import getDate from '../helper/getDate'
+import {UserType} from "../types/user"
+import {PostType} from "../types/post"
 
 const router = express.Router()
 
@@ -19,7 +21,7 @@ router.get('/:id', verify, async (req: Request, res: Response) => {
     const { id } = req.params
 
     //Checking if the id exists
-    const user = await User.findOne({ _id: id })
+    const user = await User.findById(id) as UserType
     if (!user) return res.send({ resultCode: 1, message: 'User is not found' })
 
     const posts = await Post.find({ userId: id })
@@ -27,7 +29,8 @@ router.get('/:id', verify, async (req: Request, res: Response) => {
     res.send({
         resultCode: 0,
         message: 'OK',
-        data: { ...user._doc, posts }
+        // @ts-ignore
+        data: {...user._doc, posts}
     })
 })
 
@@ -36,7 +39,7 @@ router.put('/photo', verify, async (req: Request, res: Response) => {
     const id = req.userId
     const file = req.files?.image
 
-    const user = await User.findById(id)
+    const user = await User.findById(id) as UserType
 
     if (user.photo.id) {
         await cloudinary.uploader.destroy(user.photo.id)
@@ -69,7 +72,7 @@ router.put('/photo', verify, async (req: Request, res: Response) => {
 router.put('/', verify, async (req: Request, res: Response) => {
     const id = req.userId
 
-    const user = await User.findById(id)
+    const user = await User.findById(id) as UserType
     user.info = req.body
     user.save(async (err: any, user: any) => {
         if(err) return res.json({ resultCode: 1, message: err})
@@ -94,7 +97,7 @@ router.put('/status', verify, async (req: Request, res: Response) => {
         message: 'Status shouldn`t be emty'
     })
 
-    const user = await User.findById(id)
+    const user = await User.findById(id) as UserType
     user.status = status
     user.save(async (err: any, user: any) => {
         if(err) return res.json({ resultCode: 1, message: err})
@@ -146,7 +149,7 @@ router.put('/like', verify, async (req: Request, res: Response) => {
     const id = req.userId
     const postId = req.body.postId
 
-    const post = await Post.findById(postId)
+    const post = await Post.findById(postId) as PostType
     post.likesCount++
     post.save(async (err: any) => {
         if(err) return res.json({ resultCode: 1, message: err})

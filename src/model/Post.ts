@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
+import { PostType } from 'types/post'
 
-const postSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema<PostType>({
     date: {
         type: Date,
         default: Date.now()

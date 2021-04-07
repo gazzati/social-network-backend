@@ -33,7 +33,7 @@ router.get('/:id', verify, async (req: Request, res: Response) => {
 //UPLOAD PHOTO
 router.put('/photo', verify, async (req: Request, res: Response) => {
     const id = req.userId
-    const file = req.files?.image
+    const file: any = req.files?.image
 
     const user = await User.findById(id) as UserType
 
@@ -41,7 +41,7 @@ router.put('/photo', verify, async (req: Request, res: Response) => {
         await cloudinary.uploader.destroy(user.photo.id)
     }
 
-    await cloudinary.uploader.upload(file, async (err: any, result: any) => {
+    await cloudinary.uploader.upload(file.tempFilePath, async (err: any, result: any) => {
         if (err) res.json({ resultCode: 1, message: err })
 
         const formatImg = `${config.CLOUDINARY_URL}w_100,h_100,c_fill/v1612876220/${result.public_id}.${result.format}`
@@ -56,7 +56,7 @@ router.put('/photo', verify, async (req: Request, res: Response) => {
 
         res.status(200).json({
             resultCode: 0,
-            message: 'is Upload',
+            message: 'Photo is upload',
             data: {
                 photo: formatImg
             }
@@ -90,7 +90,7 @@ router.put('/status', verify, async (req: Request, res: Response) => {
 
     if (!status) res.json({
         resultCode: 1,
-        message: 'Status shouldn`t be emty'
+        message: 'Status shouldn`t be empty'
     })
 
     const user = await User.findById(id) as UserType

@@ -17,6 +17,7 @@ export interface UserType extends Document {
 export type UserInfo = {
     name: string
     surname: string
+    isMale: boolean
     aboutMe: string
     lookingForAJob: boolean
     lookingForAJobDescription: string

@@ -20,7 +20,7 @@ router.get('/me', verify, async (req: Request, res: Response) => {
     const userId = req.userId
 
     const user = await User.findOne({ _id: userId })
-    if (!user) return res.send({ resultCode: 1, message: 'User is not found' })
+    if (!user) return res.send({ resultCode: 1, message: 'Please, log in' })
 
     res.status(200).json({
         resultCode: 0,
@@ -29,7 +29,8 @@ router.get('/me', verify, async (req: Request, res: Response) => {
             id: user._id,
             name: user.info.name,
             surname: user.info.surname,
-            photo: user.photo.url
+            photo: user.photo.url,
+            isMale: user.info.isMale
         }
     })
 })
@@ -53,10 +54,11 @@ router.post('/registration', async (req: Request, res: Response) => {
     const user = new User({
         email: req.body.email,
         password: hashedPassword,
+        status: 'My status',
         info: {
             name: req.body.name,
             surname: req.body.surname,
-            status: '',
+            isMale: req.body.isMale,
             contacts: {
                 facebook: '',
                 github: '',
@@ -89,7 +91,8 @@ router.post('/registration', async (req: Request, res: Response) => {
                     id: user._id,
                     name: user.info.name,
                     surname: user.info.surname,
-                    photo: user.photo.url
+                    photo: user.photo.url,
+                    isMale: user.info.isMale
                 },
                 authToken: token
             }
@@ -125,7 +128,8 @@ router.post('/login', async (req: Request, res: Response) => {
                 id: user._id,
                 name: user.info.name,
                 surname: user.info.surname,
-                photo: user.photo.url
+                photo: user.photo.url,
+                isMale: user.info.isMale
             },
             authToken: token
         }
@@ -135,7 +139,7 @@ router.post('/login', async (req: Request, res: Response) => {
 //LOGOUT
 router.delete('/logout', verify, async (req: Request, res: Response) => {
     res.cookie('authToken', '')
-    res.status(200).json({ resultCode: 0, message: 'Succcess logout' })
+    res.status(200).json({ resultCode: 0, message: 'Success logout' })
 })
 
 export default router

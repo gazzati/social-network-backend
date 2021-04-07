@@ -14,6 +14,8 @@ export const registerValidation = (data: any) => {
             .email(),
         password: Joi.string()
             .min(6)
+            .required(),
+        isMale: Joi.boolean()
             .required()
     })
     return schema.validate(data)

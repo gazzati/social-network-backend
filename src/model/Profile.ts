@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema<UserType>({
             min: 2,
             max: 255
         },
+        isMale: {
+            type: Boolean,
+            required: true
+        },
         aboutMe: {
             type: String
         },
@@ -77,12 +81,20 @@ const userSchema = new mongoose.Schema<UserType>({
     },
     following: [
         {
-            type: mongoose.Schema.Types.ObjectId
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
         }
     ],
     followers: [
         {
-            type: mongoose.Schema.Types.ObjectId
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+        }
+    ],
+    posts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
         }
     ]
 })

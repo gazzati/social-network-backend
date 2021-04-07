@@ -13,6 +13,9 @@ const chatSchema = new mongoose.Schema<ChatType>({
     photo: {
         type: String
     },
+    isMale: {
+        type: Boolean
+    },
     isUnreadFor: [
         {
             type: mongoose.Schema.Types.ObjectId

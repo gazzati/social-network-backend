@@ -49,6 +49,7 @@ export async function getAllChats(userId: string) {
         const companion = await User.findById(companionId) as UserType
         chat.title = `${companion.info.name} ${companion.info.surname}`
         chat.photo = companion.photo.url
+        chat.isMale = companion.info.isMale
     }
 
     return chats.sort((a: ChatType, b: ChatType) => b.updatedAt.getTime() - a.updatedAt.getTime())

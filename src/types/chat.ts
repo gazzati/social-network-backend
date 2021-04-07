@@ -5,6 +5,7 @@ export interface ChatType extends Document {
     participants: string[]
     title?: string
     photo?: string
+    isMale: boolean
     isUnreadFor?: string[]
     updatedAt: Date
     messages?: Message[]

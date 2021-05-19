@@ -142,7 +142,7 @@ router.post('/post', verify, async (req: Request, res: Response) => {
 
 //ADD LIKE
 router.put('/like', verify, async (req: Request, res: Response) => {
-    const id = req.userId
+    const id = req.body.userId
     const postId = req.body.postId
 
     const post = await Post.findById(postId) as PostType

@@ -7,14 +7,15 @@ import {JWT} from "./types/jwt"
 import {config} from "./config"
 import Chat from "./model/Chat"
 import getDate from "./helper/getDate"
-import { ChatType } from "types/chat"
-import User from "./model/Profile";
-import {UserType} from "./types/user";
+import compareDates from "./helper/comporeDates"
+import {ChatType} from "types/chat"
+import User from "./model/Profile"
+import {UserType} from "./types/user"
 
 //Connect to DB
 mongoose.connect(
     config.DB_CONNECT,
-    { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false },
+    {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false},
     () => console.log('Connected to db!')
 )
 
@@ -41,8 +42,8 @@ export const sendToUserSockets = async (id: string) => {
     }
 }
 
-export async function getAllChats(userId: string) {
-    const chats = await Chat.find({ participants: userId }) as ChatType[]
+export const getAllChats = async (userId: string) => {
+    const chats = await Chat.find({participants: userId}) as ChatType[]
 
     for (const chat of chats) {
         const companionId = chat.participants.filter(id => id != userId)[0]
@@ -52,18 +53,18 @@ export async function getAllChats(userId: string) {
         chat.isMale = companion.info.isMale
     }
 
-    return chats.sort((a: ChatType, b: ChatType) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    return chats.sort(compareDates)
 }
 
 io.on("connection", socket => {
     const userSocketId = socket.id
 
     const token = socket.handshake.auth.token
-    if(!token) return
+    if (!token) return
 
     let userId = ''
     jwt.verify(token.toString(), config.TOKEN_SECRET || '', (err: any, decoded: any) => {
-        if(err) return
+        if (err) return
         userId = (decoded as JWT)._id
 
     })
@@ -76,20 +77,33 @@ io.on("connection", socket => {
         }
     }
 
-    socket.on('loadData', async ({ chatId }) => {
-        if(!userId) return
+    socket.on('loadData', async ({chatId}) => { // ToDo fix chatId may be userId
+        if (!userId) return
         const chats: ChatType[] = await getAllChats(userId)
+        const foundedCurrentChat = chats.filter(chat => chat._id.toString() === chatId)[0]
 
-        if(!chatId) {
-            return socket.emit("chats", chats)
+        if (chatId && !foundedCurrentChat) {
+            const newChat: ChatType = new Chat({
+                participants: [userId, chatId],
+                messages: []
+            })
+            const savedChat = await newChat.save()
+
+            const chats: ChatType[] = await getAllChats(userId)
+            const messages = chats.filter(chat => chat._id === savedChat._id)
+
+            socket.emit("chats", chats)
+            socket.emit("messages", messages)
+            socket.emit("newChatId", savedChat._id)
+            return
         }
 
-        const currentChat: ChatType = chats.filter(chat => chat._id.toString() === chatId)[0]
+        const currentChat: ChatType = chatId ? foundedCurrentChat : chats[0]
 
-        if(currentChat.isUnreadFor?.includes(userId)) {
+        if (currentChat.isUnreadFor?.includes(userId)) {
             currentChat.isUnreadFor = currentChat.isUnreadFor.filter((id: any) => id.toString() !== userId)
 
-            const chat = await Chat.findById(chatId) as ChatType
+            const chat = await Chat.findById(currentChat._id) as ChatType
             chat.isUnreadFor = chat.isUnreadFor?.filter((id: any) => id.toString() !== userId)
             await chat.save()
         }
@@ -100,7 +114,7 @@ io.on("connection", socket => {
         socket.emit("messages", messages)
     })
 
-    socket.on('sendMessage', async ({ chatId, messageText }) => {
+    socket.on('sendMessage', async ({chatId, messageText}) => {
         await Chat.findByIdAndUpdate(chatId,
             {// @ts-ignore
                 $push: {
@@ -115,6 +129,7 @@ io.on("connection", socket => {
 
         const oldChat = await Chat.findById(chatId) as ChatType
         oldChat.isUnreadFor = oldChat.participants.filter(id => id != userId)
+        oldChat.updatedAt = new Date()
         await oldChat.save()
 
         const chats = await getAllChats(userId) as ChatType[]
@@ -125,24 +140,6 @@ io.on("connection", socket => {
 
         const companionId = chat.participants.filter(id => id != userId)[0]
         await sendToUserSockets(companionId.toString())
-    })
-
-    socket.on('startChat', async ({ companionId }) => {
-
-        if(!userId || !companionId) return
-
-        const newChat: ChatType = new Chat({
-            participants: [userId, companionId],
-            messages: []
-        })
-        const savedChat = await newChat.save()
-
-        const chats: ChatType[] = await getAllChats(userId)
-        const messages = chats.filter(chat => chat._id === savedChat._id)
-
-        socket.emit("chats", chats)
-        socket.emit("messages", messages)
-        socket.emit("newChatId", savedChat._id)
     })
 
     socket.on("disconnect", () => {

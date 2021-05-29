@@ -9,12 +9,22 @@ const router = express.Router()
 //USERS
 router.get('/', async (req: Request, res: Response) => {
     const {page = 1, limit = 7, term} = req.query
-    const searchFilter = {'info.name': {$regex: term ? `${term}` : '.*', $options: 'i'}}
+    const searchFilter = {$regex: term ? `${term}` : '.*', $options: 'i'}
+    const searchQuery = {
+        $or: [
+            {
+                'info.name': searchFilter
+            },
+            {
+                'info.surname': searchFilter
+            }
+        ]
+    }
 
-    const allUsers = await User.find(searchFilter)
+    const allUsers = await User.find(searchQuery)
 
     await User
-        .find(searchFilter)
+        .find(searchQuery)
         .sort({date: -1})
         .limit(+limit)
         .skip((+page - 1) * +limit)

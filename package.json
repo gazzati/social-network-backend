@@ -23,7 +23,7 @@
     "typescript": "^4.2.3"
   },
   "scripts": {
-    "dev": "ts-node-dev --files --respawn src/index.ts"
+    "start": "ts-node-dev --files --respawn src/index.ts"
   },
   "author": {
     "name": "Timur Gazzaev",

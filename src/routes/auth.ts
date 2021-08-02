@@ -6,6 +6,8 @@ import User from '../model/Profile'
 import {registerValidation, loginValidation} from '../middleware/validation'
 import {verify} from '../middleware/verify-token'
 import {config} from "../config"
+import Profile from "../model/Profile"
+import sendVerifyRegistration from "../service/mailer"
 
 const router = express.Router()
 
@@ -38,27 +40,28 @@ router.get('/me', verify, async (req: Request, res: Response) => {
 
 //REGISTRATION
 router.post('/registration', async (req: Request, res: Response) => {
+    const {name, surname, email, password, isMale} = req.body
+
     //LETS VALIDATE THE DATA BEFORE WE A USER
     const {error} = registerValidation(req.body)
     if (error) return res.json({resultCode: 1, message: error.details[0].message})
 
     //Checking if the user is already in the database
-    const emailExist = await User.findOne({email: req.body.email})
-    if (emailExist) return res.json({resultCode: 1, message: 'Email already exist'})
+    const foundUser = await User.findOne({email})
+    if (foundUser && foundUser.is_active) return res.json({resultCode: 1, message: 'Email already exist'})
 
     //Hash password
     const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(req.body.password, salt)
+    const hashedPassword = await bcrypt.hash(password, salt)
 
-    //Create a new user
-    const user = new User({
-        email: req.body.email,
+    const verificationCode = await sendVerifyRegistration(name, email)
+    if(!verificationCode) return res.json({resultCode: 1, message: 'Verification code send error'})
+
+    const userData = {
+        email,
         password: hashedPassword,
-        status: 'My status',
         info: {
-            name: req.body.name,
-            surname: req.body.surname,
-            isMale: req.body.isMale,
+            name, surname, isMale,
             contacts: {
                 facebook: '',
                 github: '',
@@ -70,17 +73,51 @@ router.post('/registration', async (req: Request, res: Response) => {
         },
         posts: [],
         following: [],
-        followers: []
-    })
+        followers: [],
+        verificationCode
+    }
+
+
+
+    try {
+        let user
+        if(foundUser) {
+            user = await User.findOneAndUpdate({email}, userData)
+        } else {
+            //Create a new user
+            user = new User(userData)
+            await user.save()
+        }
+
+        res.status(200).json({
+            resultCode: 0,
+            message: `Verification code send to ${email}!`,
+            data: {
+                id: user._id
+            }
+        })
+    } catch (err) {
+        res.send({resultCode: 1, message: err})
+    }
+})
+
+//REGISTRATION SUBMIT
+router.post('/registration/submit', async (req: Request, res: Response) => {
+    const {id, verificationCode} = req.body
+
+    const user = await Profile.findById(id)
+
+    if (!user) return res.json({resultCode: 1, message: 'User is not found'})
+    if (user.verificationCode !== verificationCode) return res.json({resultCode: 1, message: 'Verification code is incorrect'})
+
+    user.is_active = true
+    user.verificationCode = ''
 
     try {
         await user.save()
 
-        const newUser = await User.findOne({email: user.email})
-        if (!newUser) return res.json({resultCode: 1, message: 'Email is not found'})
-
         //Create a token and set cookie
-        const token = createToken(newUser._id)
+        const token = createToken(user._id)
         //res.cookie('authToken', token, { httpOnly: true, maxAge: maxAge * 1000 })
 
         res.status(200).json({
@@ -97,7 +134,6 @@ router.post('/registration', async (req: Request, res: Response) => {
                 authToken: token
             }
         })
-        res.send({user: user._id, resultCode: 0})
     } catch (err) {
         res.send({resultCode: 1, message: err})
     }
@@ -111,6 +147,8 @@ router.post('/login', async (req: Request, res: Response) => {
     //Checking if the email exists
     const user = await User.findOne({email: req.body.email})
     if (!user) return res.json({resultCode: 1, message: 'Email is not found'})
+
+    if (!user.is_active) return res.json({resultCode: 1, message: 'Account is not active'})
 
     //Password is correct
     const validPass = await bcrypt.compare(req.body.password, user.password)

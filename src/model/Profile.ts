@@ -66,7 +66,8 @@ const userSchema = new mongoose.Schema<UserType>({
         }
     },
     status: {
-        type: String
+        type: String,
+        default: 'My status'
     },
     photo: {
         url: {
@@ -95,8 +96,16 @@ const userSchema = new mongoose.Schema<UserType>({
         {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
-        }
-    ]
+        },
+    ],
+    verificationCode: {
+        type: Number,
+        default: ''
+    },
+    is_active: {
+        type: Boolean,
+        default: false
+    }
 })
 
 export default mongoose.model('User', userSchema)

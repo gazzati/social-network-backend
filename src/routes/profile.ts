@@ -95,7 +95,7 @@ router.put('/status', verify, async (req: Request, res: Response) => {
 
     const user = await User.findById(id) as UserType
     user.status = status
-    user.save(async (err: any, user: any) => {
+    await user.save(async (err: any, user: any) => {
         if(err) return res.json({ resultCode: 1, message: err})
 
         res.status(200).json({

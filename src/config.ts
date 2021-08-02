@@ -8,5 +8,9 @@ export const config = {
         cloud_name: 'sn-images',
         api_key: '931534793846843',
         api_secret: 'VPGMr0pQdVre8-KE2LNrG3ojBZ8'
+    },
+    NODEMAILER_CONFIG: {
+        email: 'gazzati.social.network@gmail.com',
+        password: 'guyfYIV8FUbol1bcyt3rC'
     }
 }

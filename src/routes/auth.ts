@@ -82,6 +82,7 @@ router.post('/registration', async (req: Request, res: Response) => {
     try {
         let user
         if(foundUser) {
+            // @ts-ignore
             user = await User.findOneAndUpdate({email}, userData)
         } else {
             //Create a new user

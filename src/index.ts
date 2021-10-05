@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import fileUpload from 'express-fileupload'
+import logger from 'morgan'
 
 import {config} from "./config"
 
@@ -25,6 +26,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors({ origin: true, credentials: true }))
 app.use(fileUpload({ useTempFiles: true }))
+app.use(logger("dev"))
 
 //Route Middlewares
 app.use('/api/auth', authRoute)

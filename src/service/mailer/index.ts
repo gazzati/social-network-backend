@@ -30,6 +30,7 @@ const sendVerifyRegistration = async (name: string, email: string) => {
     }
 
     transporter.sendMail(options, (err, info) => {
+        console.log(info)
         if (err) return console.log(err)
     })
 
